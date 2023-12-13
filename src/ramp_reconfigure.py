@@ -25,13 +25,20 @@ class RampReconfigureNode:
         rospy.loginfo("The current pose is : \n {}".format(pose_msg))
         #Implement logic to determine if the robot is inside the ramp area
         if self.check_is_inside_ramp_area (pose_msg.position):
-            self.reconfigure_max_vel(0.15)  # Adjust the max_vel_x parameter
+            self.reconfigure_max_vel(0.3)  # Adjust the max_vel_x parameter
+            self.reconfigure_min_vel(-0.15)
         else:
-            self.reconfigure_max_vel(0.5)
+            self.reconfigure_max_vel(0.55)
+            self.reconfigure_min_vel(-0.5)
 
     def reconfigure_max_vel(self, new_max_vel):
         rospy.loginfo("Reconfiguring max_vel_x to: {}".format(new_max_vel))
         params = {'max_vel_x': new_max_vel}
+        self.reconfigure_client.update_configuration(params)
+
+    def reconfigure_min_vel(self, new_min_vel):
+        rospy.loginfo("Reconfiguring min_vel_x to: {}".format(new_min_vel))
+        params = {'min_vel_x': new_min_vel}
         self.reconfigure_client.update_configuration(params)
 
     def check_is_inside_ramp_area(self, position):
