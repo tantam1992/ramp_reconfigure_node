@@ -1,0 +1,5 @@
+<launch>
+    <node name="ramp_reconfigure_node" pkg="ramp_reconfigure_node" type="ramp_reconfigure.py" output="screen">
+        <!-- Modify 'your_package_name' and 'your_node_script.py' to reflect your actual package name and script name -->
+    </node>
+</launch>
