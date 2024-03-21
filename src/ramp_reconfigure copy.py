@@ -6,8 +6,8 @@ from geometry_msgs.msg import Pose
 from std_msgs.msg import Bool
 
 # example
-ramp_area_polygon = [(0.0, 0.0), (0.0, 3.0), (3.0, 3.0), (3.0, 0.0)]
-# ramp_area_polygon = [(-8.5, 10.7), (-4.1, 10.7), (-4.1, 1.4), (-8.5, 1.4)]
+# ramp_area_polygon = [(0.0, 0.0), (0.0, 3.0), (3.0, 3.0), (3.0, 0.0)]
+ramp_area_polygon = [(-8.5, 10.7), (-4.1, 10.7), (-4.1, 1.4), (-8.5, 1.4)]
 
 class RampReconfigureNode:
     def __init__(self):
@@ -15,7 +15,6 @@ class RampReconfigureNode:
 
         self.current_pose = None
         self.inside = False
-        self.reconfiguration_done = False  # Track if reconfiguration has been done
         self.enable_reconfiguration = True  # Track enable/disable status
 
         rospy.loginfo("ramp reconfigure node started")
@@ -31,26 +30,18 @@ class RampReconfigureNode:
 
     def pose_callback(self, pose_msg):
         self.current_pose = pose_msg
-        # rospy.loginfo("The current pose is : \n {}".format(pose_msg))
+        rospy.loginfo("The current pose is : \n {}".format(pose_msg))
         # Implement logic to determine if the robot is inside the ramp area
         if not self.enable_reconfiguration:  # Check if reconfiguration is enabled
-            if self.reconfiguration_done:
-                self.reconfigure_max_vel(0.4)
-                self.reconfigure_min_vel(-0.3)
-                self.reconfiguration_done = False  # Reset reconfiguration status
+            self.reconfigure_max_vel(0.4)
+            self.reconfigure_min_vel(-0.3)
         else:
             if self.check_is_inside_ramp_area(pose_msg.position):
-                if not self.reconfiguration_done:  # Perform reconfiguration only once
-                    rospy.loginfo("Robot is inside ramp area.")
-                    self.reconfigure_max_vel(0.3)  # Adjust the max_vel_x parameter
-                    self.reconfigure_min_vel(-0.15)
-                    self.reconfiguration_done = True  # Set reconfiguration status
+                self.reconfigure_max_vel(0.3)  # Adjust the max_vel_x parameter
+                self.reconfigure_min_vel(-0.15)
             else:
-                if self.reconfiguration_done:
-                    rospy.loginfo("Robot is outside ramp area.")
-                    self.reconfigure_max_vel(0.4)
-                    self.reconfigure_min_vel(-0.3)
-                    self.reconfiguration_done = False  # Reset reconfiguration status
+                self.reconfigure_max_vel(0.4)
+                self.reconfigure_min_vel(-0.3)
 
     def enable_callback(self, enable_msg):
         self.enable_reconfiguration = enable_msg.data  # Update enable/disable status
@@ -69,7 +60,7 @@ class RampReconfigureNode:
         # Check if the given position is inside the ramp area polygon
         x, y = position.x, position.y
         inside = self.point_inside_polygon(x, y, ramp_area_polygon)
-        # rospy.loginfo("Inside ramp area: {}".format(inside))
+        rospy.loginfo("Inside ramp area: {}".format(inside))
         return inside
 
     def point_inside_polygon(self, x, y, vertices):
@@ -90,8 +81,14 @@ class RampReconfigureNode:
 
 if __name__ == '__main__':
     try:
+        rospy.init_node('ramp_reconfigure_node')
         node = RampReconfigureNode()
-        rospy.spin()  # Process incoming messages
+        
+        rate = rospy.Rate(0.01)  # Set the desired rate (e.g., 5 Hz)
+
+        while not rospy.is_shutdown():
+            # rospy.spin()  # Process incoming messages
+            rate.sleep()  # Sleep to achieve the desired rate
 
     except rospy.ROSInterruptException:
         pass
