@@ -6,8 +6,8 @@ from geometry_msgs.msg import Pose
 from std_msgs.msg import Bool
 
 # example
-ramp_area_polygon = [(0.0, 0.0), (0.0, 3.0), (3.0, 3.0), (3.0, 0.0)]
-# ramp_area_polygon = [(-8.5, 10.7), (-4.1, 10.7), (-4.1, 1.4), (-8.5, 1.4)]
+# ramp_area_polygon = [(0.0, 0.0), (0.0, 3.0), (3.0, 3.0), (3.0, 0.0)]
+ramp_area_polygon = [(-8.5, 10.7), (-4.1, 10.7), (-4.1, 1.4), (-8.5, 1.4)]
 
 class RampReconfigureNode:
     def __init__(self):
