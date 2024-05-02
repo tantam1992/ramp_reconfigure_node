@@ -11,6 +11,10 @@ from std_msgs.msg import Bool
 LG_dock_area_polygon = [(-8.5, 10.7), (-4.1, 10.7), (-4.1, 1.4), (-8.5, 1.4)]
 FiveF_dock_area_polygon = [(-8.5, 10.7), (-4.1, 10.7), (-4.1, 1.4), (-8.5, 1.4)]
 
+## footprint
+small_footprint = [[0.2,-0.5],[0.3,-0.31],[0.3,0.31],[0.2,0.5],[-0.97,0.5],[-1.27,0.42],[-1.27,-0.42],[-0.97,-0.5]]
+big_footprint = [[0.31,-0.5],[0.5,-0.31],[0.5,0.31],[0.31,0.5],[-0.97,0.5],[-1.27,0.42],[-1.27,-0.42],[-0.97,-0.5]]
+
 class DockReconfigureNode:
     def __init__(self):
         rospy.init_node('dock_reconfigure_node')
@@ -39,26 +43,26 @@ class DockReconfigureNode:
                 if not self.reconfiguration_done:
                     rospy.loginfo("Robot is close to 5F docking area.")
                     # Reconfigure footprint for local and global costmaps
-                    self.reconfigure_footprint([[0.31,-0.5],[0.3,-0.31],[0.3,0.31],[0.31,0.5],[-0.97,0.5],[-1.27,0.42],[-1.27,-0.42],[-0.97,-0.5]])
+                    self.reconfigure_footprint(small_footprint)
                     self.reconfiguration_done = True
             else:
                 if self.reconfiguration_done:
                     rospy.loginfo("Robot is outside 5F docking area.")
                     # Reset the footprint to default
-                    self.reconfigure_footprint([[0.31,-0.5],[0.5,-0.31],[0.5,0.31],[0.31,0.5],[-0.97,0.5],[-1.27,0.42],[-1.27,-0.42],[-0.97,-0.5]])
+                    self.reconfigure_footprint(big_footprint)
                     self.reconfiguration_done = False
         else:
             if self.check_is_inside_lg_dock_area(pose_msg.position):
                 if not self.reconfiguration_done:
                     rospy.loginfo("Robot is close to LG docking area.")
                     # Reconfigure footprint for local and global costmaps
-                    self.reconfigure_footprint([[0.31,-0.5],[0.3,-0.31],[0.3,0.31],[0.31,0.5],[-0.97,0.5],[-1.27,0.42],[-1.27,-0.42],[-0.97,-0.5]])
+                    self.reconfigure_footprint(small_footprint)
                     self.reconfiguration_done = True
             else:
                 if self.reconfiguration_done:
                     rospy.loginfo("Robot is outside LG docking area.")
                     # Reset the footprint to default
-                    self.reconfigure_footprint([[0.31,-0.5],[0.5,-0.31],[0.5,0.31],[0.31,0.5],[-0.97,0.5],[-1.27,0.42],[-1.27,-0.42],[-0.97,-0.5]])
+                    self.reconfigure_footprint(big_footprint)
                     self.reconfiguration_done = False
 
     def enable_callback(self, enable_msg):
