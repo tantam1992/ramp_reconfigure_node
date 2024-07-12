@@ -5,9 +5,13 @@ import dynamic_reconfigure.client
 from geometry_msgs.msg import Pose
 from std_msgs.msg import Bool
 
-# example
-# ramp_area_polygon = [(0.0, 0.0), (0.0, 3.0), (3.0, 3.0), (3.0, 0.0)]
-ramp_area_polygon = [(-8.5, 10.7), (-4.1, 10.7), (-4.1, 1.4), (-8.5, 1.4)]
+# List of ramp areas
+ramp_areas = [
+    # lift ramp
+    [(-8.5, 10.7), (-4.1, 10.7), (-4.1, 1.4), (-8.5, 1.4)],
+    # outside ramp
+    [(-15.38, 56.38), (-16.33, 56.27), (-13.59, 59.29), (-14.84, 59.20)]
+]
 
 class RampReconfigureNode:
     def __init__(self):
@@ -39,15 +43,15 @@ class RampReconfigureNode:
                 self.reconfigure_min_vel(-0.3)
                 self.reconfiguration_done = False  # Reset reconfiguration status
         else:
-            if self.check_is_inside_ramp_area(pose_msg.position):
+            if self.check_is_inside_any_ramp_area(pose_msg.position):
                 if not self.reconfiguration_done:  # Perform reconfiguration only once
-                    rospy.loginfo("Robot is inside ramp area.")
+                    rospy.loginfo("Robot is inside a ramp area.")
                     self.reconfigure_max_vel(0.3)  # Adjust the max_vel_x parameter
                     self.reconfigure_min_vel(-0.15)
                     self.reconfiguration_done = True  # Set reconfiguration status
             else:
                 if self.reconfiguration_done:
-                    rospy.loginfo("Robot is outside ramp area.")
+                    rospy.loginfo("Robot is outside ramp areas.")
                     self.reconfigure_max_vel(0.4)
                     self.reconfigure_min_vel(-0.3)
                     self.reconfiguration_done = False  # Reset reconfiguration status
@@ -65,12 +69,12 @@ class RampReconfigureNode:
         params = {'min_vel_x': new_min_vel}
         self.reconfigure_client.update_configuration(params)
 
-    def check_is_inside_ramp_area(self, position):
-        # Check if the given position is inside the ramp area polygon
-        x, y = position.x, position.y
-        inside = self.point_inside_polygon(x, y, ramp_area_polygon)
-        # rospy.loginfo("Inside ramp area: {}".format(inside))
-        return inside
+    def check_is_inside_any_ramp_area(self, position):
+        # Check if the given position is inside any of the ramp areas
+        for ramp_area_polygon in ramp_areas:
+            if self.point_inside_polygon(position.x, position.y, ramp_area_polygon):
+                return True
+        return False
 
     def point_inside_polygon(self, x, y, vertices):
         n = len(vertices)
@@ -92,6 +96,5 @@ if __name__ == '__main__':
     try:
         node = RampReconfigureNode()
         rospy.spin()  # Process incoming messages
-
     except rospy.ROSInterruptException:
         pass
