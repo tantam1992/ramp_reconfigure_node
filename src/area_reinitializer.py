@@ -11,7 +11,7 @@ LG_areas = [
     # clean
     [(-15.38, 56.38), (-16.33, 56.27), (-13.59, 59.29), (-14.84, 59.20)],
     # narrow corridor
-    [(-9.55, 56.57), (-10.44, 56.58), (-10.37, 59.06), (-9.60, 59.01)],
+    [(-9.55, 56.38), (-10.44, 56.27), (-10.37, 59.29), (-9.60, 59.20)],
     # corridor
     [(-4.59, 38.73), (-1.11, 38.72), (-1.15, 40.17), (-4.58, 40.39)],
     # corridor door
@@ -42,11 +42,10 @@ class AreaReinitializerNode:
         rospy.init_node('area_reinitializer_node')
 
         self.current_pose = None
-        self.inside_areas = [False] * len(areas)  # Track if inside any of the areas
         self.reinitialization_done = False  # Track if reconfiguration has been done
         self.enable_reconfiguration = True  # Track enable/disable status
 
-        rospy.loginfo("Area reinitializer node started")
+        rospy.loginfo("New Area reinitializer node started")
 
         # Subscribe to robot's pose
         rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.pose_callback)
@@ -60,6 +59,7 @@ class AreaReinitializerNode:
     def pose_callback(self, pose_msg):
         self.current_pose = pose_msg
         if not self.enable_reconfiguration:
+            self.inside_areas = [False] * len(FF_areas)
             for i, area in enumerate(FF_areas):
                 if self.check_is_inside_area(self.current_pose.pose.pose.position, area):
                     self.inside_areas[i] = True
@@ -77,6 +77,7 @@ class AreaReinitializerNode:
                     self.reinitialization_done = False
 
         else:
+            self.inside_areas = [False] * len(LG_areas)
             for i, area in enumerate(LG_areas):
                 if self.check_is_inside_area(self.current_pose.pose.pose.position, area):
                     self.inside_areas[i] = True
